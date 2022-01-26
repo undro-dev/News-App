@@ -85,9 +85,6 @@ form.addEventListener('submit', e => {
   loadNews();
 });
 
-
-
-
 //  init selects
 document.addEventListener('DOMContentLoaded', function () {
   M.AutoInit();
