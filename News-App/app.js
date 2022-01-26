@@ -73,6 +73,21 @@ const newsService = (function () {
   };
 
 })();
+
+//Elements 
+
+const form = document.forms['newsControls'],
+  countrySelect = form.elements['country'],
+  searchInput = form.elements['search'];
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  loadNews();
+});
+
+
+
+
 //  init selects
 document.addEventListener('DOMContentLoaded', function () {
   M.AutoInit();
@@ -80,16 +95,31 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function loadNews() {
-  newsService.topHeadlines('ru', omGetResponse)
+  showLoader();
+  const country = countrySelect.value,
+    searchText = searchInput.value;
+
+  if (!searchText) {
+    newsService.topHeadlines(country, onGetResponse);
+  } else {
+    newsService.everything(searchText, onGetResponse);
+  }
 }
 
-function omGetResponse(err, res) {
-  console.log(res);
+function onGetResponse(err, res) {
+  removeLoader();
+  if (err) {
+    showAlert(err, 'error-msg');
+    return;
+  }
   renderNews(res.articles);
 }
 
 function renderNews(news) {
   const newsContainer = document.querySelector('.news-container .row');
+  if (newsContainer.children.length) {
+    clearContainer(newsContainer);
+  }
   let fragment = '';
 
   news.forEach(item => {
@@ -99,6 +129,16 @@ function renderNews(news) {
 
   newsContainer.insertAdjacentHTML('afterbegin', fragment);
 
+
+}
+
+function clearContainer(container) {
+  let child = container.lastElementChild;
+
+  while (child) {
+    container.removeChild(child);
+    child = container.lastElementChild;
+  }
 
 }
 
@@ -125,4 +165,28 @@ function newsTemplate({
   </div>
   `;
 
+}
+
+function showAlert(msg, type = 'success') {
+  M.toast({
+    html: msg,
+    classes: type
+  });
+}
+
+function showLoader() {
+  document.body.insertAdjacentHTML('afterbegin', `
+
+  <div class="progress">
+    <div class="indeterminate"></div>
+  </div>
+  
+  `);
+}
+
+function removeLoader() {
+  const loader = document.querySelector('.progress');
+  if (loader) {
+    loader.remove();
+  }
 }
